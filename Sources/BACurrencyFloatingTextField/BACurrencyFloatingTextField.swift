@@ -92,6 +92,12 @@ open class BACurrencyFloatingTextField: UITextField {
         initAttributedPlaceholder()
     }
     
+    open override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        print(value)
+    }
+    
     //MARK: - UITextField Notifications
     open override func willMove(toSuperview newSuperview: UIView?) {
         if newSuperview != nil {
@@ -108,6 +114,15 @@ open class BACurrencyFloatingTextField: UITextField {
         updateFloatingPlaceholder()
     }
     
+    public func setValueIfNeeded(value: Double) {
+        self.value = value
+        updateFloatingPlaceholder()
+    }
+    
+    public func getValueIfNeeded() -> Double {
+        return value
+    }
+    
     //MARK: - UPDATE CURRENCY
     private func updateCurrency() {
         let cursorOffset = getOriginalCursorPosition()
@@ -120,9 +135,6 @@ open class BACurrencyFloatingTextField: UITextField {
         } else {
             text = previousValue
         }
-        
-        print(value)
-        print(Double(getCleanNumberString())! / 100)
         
         setCursorOriginalPosition(cursorOffset, oldTextFieldLength: textFieldLength)
     }

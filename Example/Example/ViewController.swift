@@ -11,9 +11,11 @@ import BACurrencyFloatingTextField
 
 class ViewController: UIViewController {
 
+    @IBOutlet weak var exampleTextField: BACurrencyFloatingTextField!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        // Do any additional setup after loading the view
     }
 
 
