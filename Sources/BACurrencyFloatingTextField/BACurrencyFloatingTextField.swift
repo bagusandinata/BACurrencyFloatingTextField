@@ -1,39 +1,76 @@
+//  The MIT License (MIT)
+//
+//  Copyright (c) 2020 bagusandinata
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in all
+//  copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//  SOFTWARE.
+
+//
+//  BACurrencyFloatingTextField.swift
+//
+//  Created by Bagus Andinata on 07/09/20.
+//  Copyright © 2020 Bagus Andinata. All rights reserved.
+//
+
 import UIKit
 import Foundation
+
+@objc
+public protocol BACurrencyFloatingTextFieldDelegate: class {
+    @objc optional func floatingPlaceholder(_ textField: UITextField, isShown: Bool)
+}
 
 open class BACurrencyFloatingTextField: UITextField {
     //MARK: - VARS FLOATING PLACEHOLDER
     private var floatingLabel: UILabel!
     private var _placeholder: String?
+    private var _placeholderSize: CGFloat = 0
+    private var _floatingText: String = ""
+    private var _floatingTextSize: CGFloat = 0
+    private var _floatingActiveTextColor: UIColor?
     
     //MARK: - VARS CURRENCY
-    private let maxDigits = 17
+    private var maxDigits = 17
     private var defaultValue = 0.00
     private let currencyFormatter = NumberFormatter()
     private var previousValue = ""
     var value: Double {
         get {
             guard let _value = Double(getCleanNumberString()) else { return 0.0 }
-            return  _value/100
+            return _value/100
         }
         set { setAmount(newValue) }
     }
     
+    //MARK: - DELEGATE
+    public weak var BAdelegate: BACurrencyFloatingTextFieldDelegate?
+    
     //MARK: - @IBInspectable Floating Placeholder
     @IBInspectable
-    var floatingText: String = "" {
-        didSet {
-            floatingLabel.text = floatingText.isEmpty ? placeholder : floatingText
-            setNeedsDisplay()
-        }
+    var floatingText: String {
+        get { return !_floatingText.isEmpty ? _floatingText : (_placeholder ?? "")}
+        set { _floatingText = newValue }
     }
     
     @IBInspectable
-    var floatingTextSize: CGFloat = 0 {
-        didSet {
-            floatingTextSize = floatingTextSize != 0 ? floatingTextSize : self.font!.pointSize
-            setNeedsDisplay()
-        }
+    var floatingTextSize: CGFloat {
+        get { return _floatingTextSize != 0 ? _floatingTextSize : (self.font?.pointSize ?? 0.0)}
+        set { _floatingTextSize = newValue }
     }
     
     @IBInspectable
@@ -44,21 +81,25 @@ open class BACurrencyFloatingTextField: UITextField {
     
     @IBInspectable
     var floatingActiveTextColor: UIColor? {
-        didSet {
-            floatingActiveTextColor = floatingActiveTextColor != nil ? floatingActiveTextColor : floatingTextColor
-        }
+        get { return _floatingActiveTextColor != nil ? _floatingActiveTextColor : floatingTextColor }
+        set { _floatingActiveTextColor = newValue }
     }
     
-    //MARK: - PLACEHOLDER
+    //MARK: - @IBInspectable PLACEHOLDER
     @IBInspectable
     var placeholderColor: UIColor = .lightGray
     
     @IBInspectable
-    var placeholderSize: CGFloat = 0 {
-        didSet {
-            placeholderSize = placeholderSize != 0 ? placeholderSize : self.font!.pointSize
-            setNeedsDisplay()
-        }
+    var placeholderSize: CGFloat {
+        get { return _placeholderSize != 0 ? _placeholderSize : (self.font?.pointSize ?? 0.0) }
+        set { _placeholderSize = newValue }
+    }
+    
+    //MARK: - @IBInspectable CURRENCY
+    @IBInspectable
+    var maxCurrencyDigit: Int {
+        get { return maxDigits }
+        set { maxDigits = newValue }
     }
     
     public init(frame: CGRect,
@@ -196,6 +237,9 @@ open class BACurrencyFloatingTextField: UITextField {
         floatingLabel.text = _placeholder
         floatingLabel.textColor = placeholderColor
         floatingLabel.font = floatingLabel.font.withSize(placeholderSize)
+        
+        guard let fontTextField = self.font else { return }
+        floatingLabel.font = fontTextField
     }
     
     //MARK: - OPERATION FLOATING PLACEHOLDER
@@ -216,6 +260,8 @@ open class BACurrencyFloatingTextField: UITextField {
     private func showFloatingPlaceholder() {
         guard let fontTextField = self.font else { return }
         
+        BAdelegate?.floatingPlaceholder?(self, isShown: true)
+        
         let yPosition = (fontTextField.pointSize/2)+floatingSpace
         
         floatingLabel.text = floatingText
@@ -225,6 +271,8 @@ open class BACurrencyFloatingTextField: UITextField {
     }
     
     private func hideFloatingPlaceholder() {
+        BAdelegate?.floatingPlaceholder?(self, isShown: false)
+        
         initAttributedPlaceholder()
         floatingLabel.transform = CGAffineTransform(translationX: floatingLabel.bounds.origin.x, y: floatingLabel.bounds.origin.y)
     }
