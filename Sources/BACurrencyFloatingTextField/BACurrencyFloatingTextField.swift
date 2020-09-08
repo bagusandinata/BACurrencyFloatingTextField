@@ -12,7 +12,10 @@ open class BACurrencyFloatingTextField: UITextField {
     private let currencyFormatter = NumberFormatter()
     private var previousValue = ""
     var value: Double {
-        get { return Double(getCleanNumberString())! / 100 }
+        get {
+            guard let _value = Double(getCleanNumberString()) else { return 0.0 }
+            return  _value/1004
+        }
         set { setAmount(newValue) }
     }
     
@@ -90,12 +93,6 @@ open class BACurrencyFloatingTextField: UITextField {
         super.awakeFromNib()
         
         initAttributedPlaceholder()
-    }
-    
-    open override func layoutSubviews() {
-        super.layoutSubviews()
-        
-        print(value)
     }
     
     //MARK: - UITextField Notifications
