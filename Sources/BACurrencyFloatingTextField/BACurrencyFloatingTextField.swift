@@ -14,7 +14,7 @@ open class BACurrencyFloatingTextField: UITextField {
     var value: Double {
         get {
             guard let _value = Double(getCleanNumberString()) else { return 0.0 }
-            return  _value/1004
+            return  _value/100
         }
         set { setAmount(newValue) }
     }
